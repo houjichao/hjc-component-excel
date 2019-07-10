@@ -98,7 +98,7 @@ public class ExcelConverter {
      * @param clazzList    目标类型
      * @return
      */
-    public <T> ExcelConvertResult convert(String fileName, InputStream is, List<Class> clazzList,Integer orgType) {
+    public <T> ExcelConvertResult convert(String fileName, InputStream is, List<Class> clazzList) {
         Map<String, List<T>> result = Maps.newHashMap();
         Map<String, List<InvalidRow>> unValidRows = Maps.newHashMap();
         Workbook wb = null;
@@ -123,14 +123,14 @@ public class ExcelConverter {
         int sheetNum = wb.getNumberOfSheets();
         for (Class clzz : clazzList) {
             if (count < sheetNum) {
-                convert(clzz, wb.getSheetAt(count), result, unValidRows, orgType);
+                convert(clzz, wb.getSheetAt(count), result, unValidRows);
                 count++;
             }
         }
         return new ExcelConvertResult(result, unValidRows);
     }
 
-    public <T> ExcelConvertResult convert(Class<T> clazz, Sheet sheet, Map<String,List<T>> result, Map<String,List<InvalidRow>> unValidRows, Integer orgType) {
+    public <T> ExcelConvertResult convert(Class<T> clazz, Sheet sheet, Map<String,List<T>> result, Map<String,List<InvalidRow>> unValidRows) {
         if (sheet == null) {
             return null;
         }
@@ -155,7 +155,7 @@ public class ExcelConverter {
                                 cell.setCellType(HSSFCell.CELL_TYPE_STRING);
                             }
                             String value = cell.getStringCellValue();
-                            setValueToField(instance, f, value, errMsg, orgType);
+                            setValueToField(instance, f, value, errMsg);
                         } catch (Exception e) {
                             log.error("单元格取值解析异常，单元格内容为{}", cell);
                             throw new RuntimeException("单元格取值解析异常，单元格内容为:" + cell);
@@ -169,7 +169,7 @@ public class ExcelConverter {
                         if (StringUtils.isBlank(value)) {
                             value = cell.getStringCellValue();
                         }
-                        setValueToField(instance, f, value, errMsg, orgType);
+                        setValueToField(instance, f, value, errMsg);
                     }
                 });
                 if (errMsg.keySet().size() > 0) {
@@ -507,7 +507,7 @@ public class ExcelConverter {
      * @param field    属性
      * @param value    值
      */
-    private void setValueToField(Object instance, Field field, String value, Map<String, String> errMsg,Integer orgType) {
+    private void setValueToField(Object instance, Field field, String value, Map<String, String> errMsg) {
         Class fclazz = field.getType();
         ExcelCell ant = field.getAnnotation(ExcelCell.class);
         String pattern = ant.pattern();
